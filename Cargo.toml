@@ -1,0 +1,9 @@
+[package]
+
+name = "boids"
+version = "0.0.1"
+authors = [ "ivko.mv@gmail.com" ]
+
+[[bin]]
+
+name = "boids" # the name of the executable to generate
