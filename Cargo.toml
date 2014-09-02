@@ -19,3 +19,6 @@ git = "https://github.com/PistonDevelopers/sdl2_game_window"
 
 [dependencies.opengl_graphics]
 git = "https://github.com/PistonDevelopers/opengl_graphics"
+
+[dependencies.cgmath]
+git = "https://github.com/bjz/cgmath-rs"
