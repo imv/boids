@@ -14,7 +14,11 @@ use piston::{
     GameIteratorSettings,
     RenderArgs
 };
-use graphics::{Context, AddColor, Draw};
+use graphics::{
+    Context,
+    AddColor, AddEllipse,
+    Draw
+};
 use sdl2_game_window::GameWindowSDL2;
 use opengl_graphics::Gl;
 use cgmath::Point2;
@@ -27,6 +31,7 @@ pub struct Boid {
 }
 
 pub static BOID_COUNT: uint = 50;
+pub static BOID_RADIUS: f64 = 0.01;
 
 pub struct App {
     gl: Gl,
@@ -47,10 +52,16 @@ impl App {
 
     fn render(&mut self, args: &RenderArgs) {
         self.gl.viewport(0, 0, args.width as i32, args.height as i32);
-        let context = Context::abs(args.width as f64, args.height as f64);
+        let context = Context::abs(1.0, 1.0);
         context
             .rgb(0.25, 0.5, 1.0)
             .draw(&mut self.gl);
+        for b in self.boids.iter() {
+            context
+                .rgb(0.0, 0.0, 0.0)
+                .circle(b.pos.x, b.pos.y, 0.01)
+                .draw(&mut self.gl);
+        }
     }
 }
 
@@ -59,6 +70,7 @@ fn main() {
         OpenGL_3_2, 
         GameWindowSettings {
             title: "Boids".to_string(),
+            size: [640, 640],
             ..GameWindowSettings::default()
         }
     );
