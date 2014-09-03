@@ -4,14 +4,22 @@ extern crate graphics;
 extern crate sdl2_game_window;
 extern crate opengl_graphics;
 extern crate cgmath;
+extern crate shader_version;
 
 use rand::{Rand, XorShiftRng};
-use piston::{Game, GameWindowSettings, GameIteratorSettings, RenderArgs};
+use piston::{
+    GameWindowSettings,
+    Render,
+    GameIterator,
+    GameIteratorSettings,
+    RenderArgs
+};
 use graphics::{Context, AddColor, Draw};
 use sdl2_game_window::GameWindowSDL2;
 use opengl_graphics::Gl;
-use cgmath::point::Point2;
-use cgmath::vector::Vector2;
+use cgmath::Point2;
+use cgmath::Vector2;
+use shader_version::opengl::OpenGL_3_2;
 
 pub struct Boid {
     pos: Point2<f64>,
@@ -36,9 +44,7 @@ impl App {
             })
         }
     }
-}
 
-impl Game for App {
     fn render(&mut self, args: &RenderArgs) {
         self.gl.viewport(0, 0, args.width as i32, args.height as i32);
         let context = Context::abs(args.width as f64, args.height as f64);
@@ -50,16 +56,23 @@ impl Game for App {
 
 fn main() {
     let mut window = GameWindowSDL2::new(
+        OpenGL_3_2, 
         GameWindowSettings {
             title: "Boids".to_string(),
             ..GameWindowSettings::default()
         }
     );
     let mut app = App::new();
-    app.run(&mut window,
-        &GameIteratorSettings {
-            updates_per_second: 120,
-            max_frames_per_second: 60
+    let game_iter_settings = GameIteratorSettings {
+        updates_per_second: 120,
+        max_frames_per_second: 60
+    };
+    for e in GameIterator::new(&mut window, &game_iter_settings) {
+        match e {
+            Render(ref args) => {
+                app.render(args);
+            },
+            _ => {},
         }
-    );
+    }
 }
