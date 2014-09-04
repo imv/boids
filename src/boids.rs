@@ -7,6 +7,7 @@ extern crate cgmath;
 extern crate shader_version;
 
 use rand::{Rand, XorShiftRng};
+use rand::distributions::{Normal, IndependentSample};
 use piston::{
     GameWindowSettings,
     Render, Update,
@@ -41,10 +42,14 @@ pub struct App {
 impl App {
     fn new() -> App {
         let mut rng = XorShiftRng::new_unseeded();
+        let normal = Normal::new(0.0, 0.5);
         App {
             boids: Vec::from_fn(BOID_COUNT, |_| Boid {
                 pos: Point2 { x: Rand::rand(&mut rng), y: Rand::rand(&mut rng) },
-                vel: Vector2 { x: Rand::rand(&mut rng), y: Rand::rand(&mut rng) },
+                vel: Vector2 {
+                    x: normal.ind_sample(&mut rng),
+                    y: normal.ind_sample(&mut rng)
+                }
             })
         }
     }
