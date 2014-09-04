@@ -11,8 +11,7 @@ use piston::{
     GameWindowSettings,
     Render,
     GameIterator,
-    GameIteratorSettings,
-    RenderArgs
+    GameIteratorSettings
 };
 use graphics::{
     Context,
@@ -34,7 +33,6 @@ pub static BOID_COUNT: uint = 50;
 pub static BOID_RADIUS: f64 = 0.01;
 
 pub struct App {
-    gl: Gl,
     boids: Vec<Boid>,
 }
 
@@ -42,7 +40,6 @@ impl App {
     fn new() -> App {
         let mut rng = XorShiftRng::new_unseeded();
         App {
-            gl: Gl::new(),
             boids: Vec::from_fn(BOID_COUNT, |_| Boid {
                 pos: Point2 { x: Rand::rand(&mut rng), y: Rand::rand(&mut rng) },
                 vel: Vector2 { x: Rand::rand(&mut rng), y: Rand::rand(&mut rng) },
@@ -50,17 +47,16 @@ impl App {
         }
     }
 
-    fn render(&mut self, args: &RenderArgs) {
-        self.gl.viewport(0, 0, args.width as i32, args.height as i32);
+    fn render(&self, gl: &mut Gl) {
         let context = Context::abs(1.0, 1.0);
         context
             .rgb(0.25, 0.5, 1.0)
-            .draw(&mut self.gl);
+            .draw(gl);
         for b in self.boids.iter() {
             context
                 .rgb(0.0, 0.0, 0.0)
                 .circle(b.pos.x, b.pos.y, 0.01)
-                .draw(&mut self.gl);
+                .draw(gl);
         }
     }
 }
@@ -74,6 +70,7 @@ fn main() {
             ..GameWindowSettings::default()
         }
     );
+    let mut gl = Gl::new();
     let mut app = App::new();
     let game_iter_settings = GameIteratorSettings {
         updates_per_second: 120,
@@ -82,7 +79,8 @@ fn main() {
     for e in GameIterator::new(&mut window, &game_iter_settings) {
         match e {
             Render(ref args) => {
-                app.render(args);
+                gl.viewport(0, 0, args.width as i32, args.height as i32);
+                app.render(&mut gl);
             },
             _ => {},
         }
