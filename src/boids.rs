@@ -9,7 +9,7 @@ extern crate shader_version;
 use rand::{Rand, XorShiftRng};
 use piston::{
     GameWindowSettings,
-    Render,
+    Render, Update,
     GameIterator,
     GameIteratorSettings
 };
@@ -20,8 +20,10 @@ use graphics::{
 };
 use sdl2_game_window::GameWindowSDL2;
 use opengl_graphics::Gl;
-use cgmath::Point2;
-use cgmath::Vector2;
+use cgmath::{
+    Point, Point2,
+    Vector, Vector2
+};
 use shader_version::opengl::OpenGL_3_2;
 
 pub struct Boid {
@@ -59,6 +61,12 @@ impl App {
                 .draw(gl);
         }
     }
+
+    fn update(&mut self, dt: f64) {
+        for b in self.boids.mut_iter() {
+            b.pos.add_self_v(&b.vel.mul_s(dt))
+        }
+    }
 }
 
 fn main() {
@@ -82,6 +90,8 @@ fn main() {
                 gl.viewport(0, 0, args.width as i32, args.height as i32);
                 app.render(&mut gl);
             },
+            Update(ref args) =>
+                app.update(args.dt),
             _ => {},
         }
     }
