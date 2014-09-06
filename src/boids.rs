@@ -81,8 +81,17 @@ impl App {
     }
 
     fn update_vel(&mut self, dt: f64) {
-        let accels: Vec<Vector2<f64>> = self.boids.iter().map(|b1|
-            self.boids.iter()
+        fn towards_0_1(x: f64) -> f64 {
+            if x < 0.0 {
+                1.0
+            } else if x > 1.0 {
+                -1.0
+            } else {
+                0.0
+            }
+        }
+        let accels: Vec<Vector2<f64>> = self.boids.iter().map(|b1| {
+            let flocking = self.boids.iter()
                 .filter(|b2|
                     !b2.pos.approx_eq(&b1.pos)
                 ).filter(|b2| {
@@ -99,8 +108,13 @@ impl App {
                             .mul_s(ACCEL_FACTOR)
                         // alignment
                         + (b2.vel - b1.vel).mul_s(ALIGN_FACTOR)
-                })
-        ).collect();
+                });
+            let steer_to_screen = Vector2 {
+                x: towards_0_1(b1.pos.x),
+                y: towards_0_1(b1.pos.y)
+            };
+            flocking + steer_to_screen
+        }).collect();
         for (ref mut b, ref accel) in self.boids.mut_iter().zip(accels.iter()) {
             b.vel.add_self_v(&accel.mul_s(dt))
         }
