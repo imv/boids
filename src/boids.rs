@@ -41,6 +41,8 @@ pub static CROWD_RADIUS: f64 = 0.1;
 pub static FLOCK_RADIUS: f64 = 0.2;
 pub static ACCEL_FACTOR: f64 = 10.0;
 pub static ALIGN_FACTOR: f64 = 0.5;
+pub static ALONE_VEL: f64 = 0.5;
+pub static KEEP_VEL_FACTOR: f64 = 1.0;
 
 pub struct App {
     boids: Vec<Boid>,
@@ -49,7 +51,7 @@ pub struct App {
 impl App {
     fn new() -> App {
         let mut rng = XorShiftRng::new_unseeded();
-        let normal = Normal::new(0.0, 0.5);
+        let normal = Normal::new(0.0, ALONE_VEL*0.5f64.sqrt());
         App {
             boids: Vec::from_fn(BOID_COUNT, |_| Boid {
                 pos: Point2 { x: Rand::rand(&mut rng), y: Rand::rand(&mut rng) },
@@ -109,11 +111,13 @@ impl App {
                         // alignment
                         + (b2.vel - b1.vel).mul_s(ALIGN_FACTOR)
                 });
+            let keep_vel = (b1.vel.normalize_to(ALONE_VEL) - b1.vel)
+                .mul_s(KEEP_VEL_FACTOR);
             let steer_to_screen = Vector2 {
                 x: towards_0_1(b1.pos.x),
                 y: towards_0_1(b1.pos.y)
             };
-            flocking + steer_to_screen
+            flocking + keep_vel + steer_to_screen
         }).collect();
         for (ref mut b, ref accel) in self.boids.mut_iter().zip(accels.iter()) {
             b.vel.add_self_v(&accel.mul_s(dt))
