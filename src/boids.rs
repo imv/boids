@@ -42,7 +42,7 @@ pub static FLOCK_RADIUS: f64 = 0.2;
 pub static ACCEL_FACTOR: f64 = 10.0;
 pub static ALIGN_FACTOR: f64 = 0.5;
 pub static ALONE_VEL: f64 = 0.5;
-pub static KEEP_VEL_FACTOR: f64 = 1.0;
+pub static KEEP_VEL_FACTOR: f64 = 10.0;
 
 pub struct App {
     boids: Vec<Boid>,
