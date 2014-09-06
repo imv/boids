@@ -9,17 +9,17 @@ extern crate shader_version;
 use rand::{Rand, XorShiftRng};
 use rand::distributions::{Normal, IndependentSample};
 use piston::{
-    GameWindowSettings,
+    WindowSettings,
     Render, Update,
-    GameIterator,
-    GameIteratorSettings
+    EventIterator,
+    EventSettings
 };
 use graphics::{
     Context,
     AddColor, AddEllipse,
     Draw
 };
-use sdl2_game_window::GameWindowSDL2;
+use sdl2_game_window::WindowSDL2;
 use opengl_graphics::Gl;
 use cgmath::{
     Point, Point2,
@@ -75,21 +75,21 @@ impl App {
 }
 
 fn main() {
-    let mut window = GameWindowSDL2::new(
+    let mut window = WindowSDL2::new(
         OpenGL_3_2, 
-        GameWindowSettings {
+        WindowSettings {
             title: "Boids".to_string(),
             size: [640, 640],
-            ..GameWindowSettings::default()
+            ..WindowSettings::default()
         }
     );
     let mut gl = Gl::new();
     let mut app = App::new();
-    let game_iter_settings = GameIteratorSettings {
+    let event_settings = EventSettings {
         updates_per_second: 120,
         max_frames_per_second: 60
     };
-    for e in GameIterator::new(&mut window, &game_iter_settings) {
+    for e in EventIterator::new(&mut window, &event_settings) {
         match e {
             Render(ref args) => {
                 gl.viewport(0, 0, args.width as i32, args.height as i32);
