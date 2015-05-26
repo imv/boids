@@ -1,21 +1,26 @@
 [package]
 
 name = "boids"
-version = "0.0.1"
+version = "0.0.2"
 authors = [ "ivko.mv@gmail.com" ]
 
 [[bin]]
 
 name = "boids" # the name of the executable to generate
 
+[dependencies]
+num = "0.1.*"
+rand = "0.3.*"
+cgmath = "0.2.*"
+
 [dependencies.piston]
 git = "https://github.com/PistonDevelopers/piston"
 
-[dependencies.sdl2_game_window]
-git = "https://github.com/PistonDevelopers/sdl2_game_window"
+[dependencies.piston2d-graphics]
+git = "https://github.com/PistonDevelopers/graphics"
 
-[dependencies.opengl_graphics]
+[dependencies.pistoncore-sdl2_window]
+git = "https://github.com/PistonDevelopers/sdl2_window"
+
+[dependencies.piston2d-opengl_graphics]
 git = "https://github.com/PistonDevelopers/opengl_graphics"
-
-[dependencies.cgmath]
-git = "https://github.com/bjz/cgmath-rs"

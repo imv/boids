@@ -1,40 +1,31 @@
+extern crate num;
 extern crate rand;
 extern crate piston;
 extern crate graphics;
-extern crate sdl2_game_window;
+extern crate sdl2_window;
 extern crate opengl_graphics;
 extern crate cgmath;
-extern crate shader_version;
 
-use std::num::{abs, Zero};
+use num::{abs, Zero};
 use rand::{Rand, XorShiftRng};
 use rand::distributions::{Normal, IndependentSample};
-use piston::{
-    WindowSettings,
-    Render, Update,
-    EventIterator,
-    EventSettings
-};
-use graphics::{
-    Context,
-    AddColor, AddEllipse,
-    Draw
-};
-use sdl2_game_window::WindowSDL2;
-use opengl_graphics::Gl;
+use piston::window::{WindowSettings, Size};
+use piston::event::{Events, RenderEvent, UpdateEvent};
+use graphics::{Context, Transformed};
+use sdl2_window::Sdl2Window;
+use opengl_graphics::{GlGraphics, OpenGL};
 use cgmath::{
     ApproxEq,
     Point, Point2,
     Vector, EuclideanVector, Vector2
 };
-use shader_version::opengl::OpenGL_3_2;
 
 pub struct Boid {
     pos: Point2<f64>,
     vel: Vector2<f64>,
 }
 
-pub static BOID_COUNT: uint = 50;
+pub static BOID_COUNT: u32 = 50;
 pub static BOID_RADIUS: f64 = 0.01;
 pub static VISION_ANGLE: f64 = 2.0;
 pub static CROWD_RADIUS: f64 = 0.1;
@@ -53,31 +44,28 @@ impl App {
         let mut rng = XorShiftRng::new_unseeded();
         let normal = Normal::new(0.0, ALONE_VEL*0.5f64.sqrt());
         App {
-            boids: Vec::from_fn(BOID_COUNT, |_| Boid {
+            boids: (0..BOID_COUNT).map(|_| Boid {
                 pos: Point2 { x: Rand::rand(&mut rng), y: Rand::rand(&mut rng) },
                 vel: Vector2 {
                     x: normal.ind_sample(&mut rng),
                     y: normal.ind_sample(&mut rng)
                 }
-            })
+            }).collect()
         }
     }
 
-    fn render(&self, gl: &mut Gl) {
-        let context = Context::abs(1.0, 1.0);
-        context
-            .rgb(0.25, 0.5, 1.0)
-            .draw(gl);
+    fn render(&self, context: Context, gl: &mut GlGraphics) {
+        graphics::clear([0.25, 0.5, 1.0, 1.0], gl);
+        let context = context.scale(640.0, 640.0);
         for b in self.boids.iter() {
-            context
-                .rgb(0.0, 0.0, 0.0)
-                .circle(b.pos.x, b.pos.y, 0.01)
-                .draw(gl);
+            graphics::ellipse([0.0, 0.0, 0.0, 1.0],
+                graphics::ellipse::circle(b.pos.x, b.pos.y, 0.01),
+                context.transform, gl);
         }
     }
 
     fn update_pos(&mut self, dt: f64) {
-        for b in self.boids.mut_iter() {
+        for b in self.boids.iter_mut() {
             b.pos.add_self_v(&b.vel.mul_s(dt))
         }
     }
@@ -119,38 +107,26 @@ impl App {
             };
             flocking + keep_vel + steer_to_screen
         }).collect();
-        for (ref mut b, ref accel) in self.boids.mut_iter().zip(accels.iter()) {
+        for (ref mut b, ref accel) in self.boids.iter_mut().zip(accels.iter()) {
             b.vel.add_self_v(&accel.mul_s(dt))
         }
     }
 }
 
 fn main() {
-    let mut window = WindowSDL2::new(
-        OpenGL_3_2, 
-        WindowSettings {
-            title: "Boids".to_string(),
-            size: [640, 640],
-            ..WindowSettings::default()
-        }
+    let window = Sdl2Window::new(
+        OpenGL::_3_2, 
+        WindowSettings::new("Boids".to_string(), Size {width: 640, height: 640})
     );
-    let mut gl = Gl::new();
+    let mut gl = GlGraphics::new(OpenGL::_3_2);
     let mut app = App::new();
-    let event_settings = EventSettings {
-        updates_per_second: 120,
-        max_frames_per_second: 60
-    };
-    for e in EventIterator::new(&mut window, &event_settings) {
-        match e {
-            Render(ref args) => {
-                gl.viewport(0, 0, args.width as i32, args.height as i32);
-                app.render(&mut gl);
-            },
-            Update(ref args) => {
-                app.update_pos(args.dt);
-                app.update_vel(args.dt);
-            },
-            _ => {},
-        }
+    for e in window.events() {
+        if let Some(args) = e.render_args() {
+            gl.draw(args.viewport(), |context, g| {app.render(context, g);});
+        };
+        if let Some(args) = e.update_args() {
+            app.update_pos(args.dt);
+            app.update_vel(args.dt);
+        };
     }
 }
