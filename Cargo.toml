@@ -11,7 +11,7 @@ name = "boids" # the name of the executable to generate
 [dependencies]
 num = "0.1.*"
 rand = "0.3.*"
-cgmath = "0.2.*"
+nalgebra = ">=0.2.16"
 
 [dependencies.piston]
 git = "https://github.com/PistonDevelopers/piston"
